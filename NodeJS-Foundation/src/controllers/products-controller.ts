@@ -1,10 +1,23 @@
 import type { IncomingMessage, ServerResponse } from "http";
+import { productService } from "../service/product-service";
 
 const productController = (req : IncomingMessage, res : ServerResponse) => {
 
     // product -> GET , POST, PUT
-    res.writeHead(200,{"Content-Type" : "application/json"});
-    res.end(JSON.stringify({massage : "This is products route"}));
+
+    const url = req.url;
+    const method = req.method;
+
+    if (url === "/products" && method === "GET") {
+
+        const products = productService();
+
+        res.writeHead(200,{"Content-Type" : "application/json"});
+        res.end(JSON.stringify({
+            message : "Product retrieve successfully",
+            data : products,
+        }));
+    };
 
 };
 
