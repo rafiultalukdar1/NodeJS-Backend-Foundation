@@ -35,6 +35,7 @@ const productController = async (req : IncomingMessage, res : ServerResponse) =>
             data : product,
         }));
     }
+    // Product Create (Post method)
     else if (method === "POST" && url === "/products") {
 
         const body = await bodyParser(req);
@@ -55,6 +56,36 @@ const productController = async (req : IncomingMessage, res : ServerResponse) =>
         res.end(JSON.stringify({
             message : "Product created successfully",
             data : newProduct,
+        }));
+    }
+    // Product Update (PUT method)
+    else if (method === "PUT" && id !== null) {
+
+        const body = await bodyParser(req);
+
+        const products = productService();
+
+        const index = products.findIndex((p : IProduct) => p.id === id);
+
+        if (index < 0) {
+            res.writeHead(404,{"Content-Type" : "application/json"});
+            res.end(JSON.stringify({
+                message : "Product not found!",
+            }));
+            return;
+        }
+
+        products[index] = {
+            id : products[index].id,
+            ...body
+        }
+
+        createProduct(products);
+
+        res.writeHead(200,{"Content-Type" : "application/json"});
+        res.end(JSON.stringify({
+            message : "Product updated successfully",
+            data : products[index],
         }));
     }
 };
