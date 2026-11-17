@@ -9,10 +9,33 @@ app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
 
 const pool = new Pool({
-  connectionString : "postgresql://neondb_owner:npg_lFcp8SaNk0xG@ep-solitary-cloud-befrurpc-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  connectionString : "postgresql://neondb_owner:npg_EoIG59AnzewH@ep-long-wave-aol70ht2-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=false&channel_binding=require",
+  // connectionString: "postgresql://postgres:RafiulTalukdar@db.ymzbtpwhljnigdysgokv.supabase.co:5432/postgres"
 });
 
-console.log(pool);
+// console.log(pool);
+
+const initDB = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255),
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      age INT,
+      is_Active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+      );
+      `);
+    console.log("Database connected!!");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
 
 
 app.get('/', (req : Request, res : Response) => {
@@ -34,6 +57,18 @@ app.post("/", async (req : Request, res : Response) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-});
+async function startserver(){
+  try {
+      // const client = await pool.connect();
+      // console.log(client);
+      initDB();
+
+      app.listen(port, () => {
+        console.log(`Example app listening on port ${port}`)
+      });
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+startserver();
