@@ -1,5 +1,6 @@
 import express, { type Request, type Application, type Response } from "express";
 import {Pool} from "pg";
+import "dotenv/config";
 const app : Application = express();
 const port = 5000
 
@@ -9,8 +10,7 @@ app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
 
 const pool = new Pool({
-  connectionString : "postgresql://neondb_owner:npg_EoIG59AnzewH@ep-long-wave-aol70ht2-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=false&channel_binding=require",
-  // connectionString: "postgresql://postgres:RafiulTalukdar@db.ymzbtpwhljnigdysgokv.supabase.co:5432/postgres"
+  connectionString : process.env.DATABASE_URL,
 });
 
 // console.log(pool);
@@ -102,6 +102,39 @@ app.get("/api/v1/users/:id", async (req : Request, res : Response) => {
     const result = await pool.query(
       `SELECT * FROM users WHERE id = $1`,
       [id],
+    );
+    
+    res.status(200).json({
+      success : true,
+      message : "User retrived successfully",
+      data : result.rows[0],
+    });
+
+  } catch (error : any) {
+    res.status(500).json({
+      success : false,
+      message : error?.message,
+      error : error,
+    });
+  }
+});
+
+
+// Update User with the PUT method
+app.put("/api/v1/users/:id", async (req : Request, res : Response) => {
+  try {
+    const {id} = req.params;
+    const {name, password, age, is_Active} = req.body;
+    const result = await pool.query(
+      `UPDATE users
+      SET
+      name = COALESCE($1, name),
+      password = COALESCE($2, password),
+      age = COALESCE($3, age),
+      is_Active = COALESCE($4, is_Active),
+      updated_at = NOW() 
+      WHERE id = $5 RETURNING *`,
+      [name ?? null, password ?? null, age ?? null, is_Active ?? null, id]
     );
     
     res.status(200).json({
