@@ -36,8 +36,6 @@ const initDB = async () => {
 };
 
 
-
-
 app.get('/', (req : Request, res : Response) => {
   console.log(req);
   // res.send('This is root route');
@@ -46,6 +44,35 @@ app.get('/', (req : Request, res : Response) => {
     message : "This is root route",
   });
 });
+
+// POST Method
+app.post("/api/v1/users", async (req : Request, res : Response) => {
+  try {
+    const {name, email, password, age} = req.body;
+
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password, age)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *`,
+      [name, email, password, age]
+    );
+
+    res.status(201).json({
+      success : true,
+      message : "User created",
+      data : result.rows[0],
+    });
+  } catch (error : any) {
+    res.status(500).json({
+      success : false,
+      message : error?.message,
+      error : error,
+    });
+  }
+});
+ 
+
+
 
 app.post("/", async (req : Request, res : Response) => {
   // console.log(req.body)
@@ -57,7 +84,7 @@ app.post("/", async (req : Request, res : Response) => {
   });
 });
 
-async function startserver(){
+async function startServer(){
   try {
       // const client = await pool.connect();
       // console.log(client);
@@ -71,4 +98,4 @@ async function startserver(){
   }
 }
 
-startserver();
+startServer();
