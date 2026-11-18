@@ -45,7 +45,7 @@ app.get('/', (req : Request, res : Response) => {
   });
 });
 
-// POST Method
+// Create Users (POST Method)
 app.post("/api/v1/users", async (req : Request, res : Response) => {
   try {
     const {name, email, password, age} = req.body;
@@ -70,8 +70,54 @@ app.post("/api/v1/users", async (req : Request, res : Response) => {
     });
   }
 });
- 
 
+
+// Getting All Users (GET Method)
+app.get("/api/v1/users", async (req : Request, res : Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM users`
+    );
+
+    res.status(200).json({
+      success : true,
+      message : "User retrived successfully",
+      data : result.rows,
+    });
+
+  } catch (error : any) {
+    res.status(500).json({
+      success : false,
+      message : error?.message,
+      error : error,
+    });
+  }
+});
+
+
+// Single user with params
+app.get("/api/v1/users/:id", async (req : Request, res : Response) => {
+  try {
+    const {id} = req.params;
+    const result = await pool.query(
+      `SELECT * FROM users WHERE id = $1`,
+      [id],
+    );
+    
+    res.status(200).json({
+      success : true,
+      message : "User retrived successfully",
+      data : result.rows[0],
+    });
+
+  } catch (error : any) {
+    res.status(500).json({
+      success : false,
+      message : error?.message,
+      error : error,
+    });
+  }
+});
 
 
 app.post("/", async (req : Request, res : Response) => {
