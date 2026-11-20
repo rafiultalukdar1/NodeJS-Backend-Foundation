@@ -1,19 +1,20 @@
 import { pool } from "../../db";
 import { IUpdateUser, IUser } from "./user-interface";
+import bcrypt from 'bcryptjs';
 
 
 // Create Users
 const createUserIntoDB = async (payload : IUser) => {
-
-    const {name, email, password, age} = payload;
-
-    const result = await pool.query(
-      `INSERT INTO users (name, email, password, age)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *`,
-      [name, email, password, age]
-    );
-    return result;
+  const {name, email, password, age} = payload;
+  const hashPassword = await bcrypt.hash(password, 10);
+  const result = await pool.query(
+    `INSERT INTO users (name, email, password, age)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *`,
+    [name, email, hashPassword, age]
+  );
+  delete result.rows[0].password;
+  return result;
 }
 
 
@@ -21,7 +22,7 @@ const createUserIntoDB = async (payload : IUser) => {
 const getAllUsersFromDB = async () => {
 
     const result = await pool.query(
-      `SELECT * FROM users`
+      `SELECT id, name, email, age, is_Active, created_at, updated_at FROM users`
     );
     return result;
 }
@@ -30,7 +31,7 @@ const getAllUsersFromDB = async () => {
 // Single user with params
 const getSingleUserDB = async (id : string) => {
     const result = await pool.query(
-      `SELECT * FROM users WHERE id = $1`,
+      `SELECT id, name, email, age, is_Active, created_at, updated_at FROM users WHERE id = $1`,
       [id],
     );
     return result;
@@ -40,6 +41,7 @@ const getSingleUserDB = async (id : string) => {
 // Update User
 const updateUserBD = async (payload : IUpdateUser, id : string) => {
     const {name, password, age, is_Active} = payload;
+    const hashPassword = password ? await bcrypt.hash(password, 10) : null;
     const result = await pool.query(
       `UPDATE users
       SET
@@ -49,8 +51,11 @@ const updateUserBD = async (payload : IUpdateUser, id : string) => {
       is_Active = COALESCE($4, is_Active),
       updated_at = NOW() 
       WHERE id = $5 RETURNING *`,
-      [name ?? null, password ?? null, age ?? null, is_Active ?? null, id]
+      [name ?? null, hashPassword, age ?? null, is_Active ?? null, id]
     );
+    if (result.rows[0]) {
+      delete result.rows[0].password;
+    }
     return result;
 }
 
