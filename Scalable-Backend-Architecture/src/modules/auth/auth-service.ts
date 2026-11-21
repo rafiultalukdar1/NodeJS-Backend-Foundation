@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../db";
 import jwt from "jsonwebtoken";
-import "dotenv/config";
+import config from "../../config";
 
 const loginUserIntoDB = async (payLoad : {email : string; password : string}) => {
 
@@ -36,7 +36,7 @@ const loginUserIntoDB = async (payLoad : {email : string; password : string}) =>
         email: user.rows[0].email,
     };
 
-    const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET as string, {
+    const accessToken = jwt.sign(jwtPayload, config.jwt_sectret, {
         expiresIn : "7d",
     });
 
