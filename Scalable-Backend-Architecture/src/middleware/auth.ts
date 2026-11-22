@@ -5,6 +5,11 @@ import { pool } from "../db";
 
 const auth = async (req: Request, res: Response, next: NextFunction) => {
 
+    // 01. Check if the token exists
+    // 02. Verify Token
+    // 03. Check if the user exists
+    // 04. Is the user status Active
+
     const token = req.headers.authorization;
 
     if (!token) {
@@ -34,6 +39,9 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
             message: "Forbidden!",
         });
     }
+
+    req.user = decode;
+
 
     next();
 };
