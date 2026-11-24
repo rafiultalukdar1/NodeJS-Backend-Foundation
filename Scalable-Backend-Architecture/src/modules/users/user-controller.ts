@@ -133,12 +133,10 @@ const deleteUser = async (req : Request, res : Response) => {
 }
 
 
-
-
 export const userController = {
-    createUseer,
-    getAllUsers,
-    getSingleUser,
-    updateUser,
-    deleteUser,
+  createUseer,
+  getAllUsers,
+  getSingleUser,
+  updateUser,
+  deleteUser,
 }
